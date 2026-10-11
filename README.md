@@ -124,3 +124,10 @@ pytest
 ```
 
 Cada aresta é `[u, v, rótulo]`. Os vértices são inferidos a partir das arestas.
+
+## Integrantes
+Victor Bastos Xavier
+
+Raul Ramalho Lucena
+
+## Referências (Papers)
