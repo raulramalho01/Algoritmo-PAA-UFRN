@@ -131,3 +131,5 @@ Victor Bastos Xavier
 Raul Ramalho Lucena
 
 ## Referências (Papers)
+[1] Consoli, S., Darby-Dowman, K., Mladenović, N., & Moreno-Pérez, J. A. (2009). Variable neighbourhood search for the minimum labelling Steiner tree problem. Annals of Operations Research, 172(1), 71–96. https://doi.org/10.1007/s10479-008-0507-y
+[2] Consoli, S., Moreno-Pérez, J. A., Darby-Dowman, K., & Mladenović, N. (2010). Discrete particle swarm optimization for the minimum labelling steiner tree problem. Natural Computing, 9(1), 29–46. https://doi.org/10.1007/s11047-009-9137-9
