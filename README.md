@@ -1,6 +1,10 @@
-# Árvore de Steiner com Rotulação Mínima
+## MLSteiner: Árvore de Steiner com Rotulação Mínima
 
-Implementação em Python de uma heurística para o problema da **Árvore de Steiner com Rotulação Mínima** (*Minimum Labeling Steiner Tree*, MLSteiner): dado um grafo cujas arestas têm rótulos e um conjunto de vértices terminais, encontrar uma árvore que conecte todos os terminais usando o menor número possível de rótulos distintos.
+Implementação em Python de uma heurística para o problema da **Árvore de Steiner com Rotulação Mínima** (*Minimum Labeling Steiner Tree*, MLSteiner).
+
+**O problema:** dado um grafo em que cada aresta tem um rótulo (cor) e um
+conjunto de vértices básicos, encontrar uma árvore que conecte todos os
+vértices básicos usando o menor número possível de rótulos diferentes.
 
 <p align="center">
   <img src="docs/arvore-steiner-rotulacao-minima.gif" width="600" alt="Animação da Árvore de Steiner com Rotulação Mínima">
@@ -8,15 +12,31 @@ Implementação em Python de uma heurística para o problema da **Árvore de Ste
 
 ## Como rodar o projeto
 
-# MLSteiner: Árvore de Steiner com Rotulação Mínima
+### 1. Clonar o repositório
 
+```bash
+git clone <URL-DO-REPOSITORIO>
+cd <NOME-DA-PASTA>
+```
+
+### 2. Gerar uma instância e resolver
+
+```bash
+python3 gerador.py 100 125 0.2 40 --seed 7 -o exemplo.txt
+python3 guloso.py exemplo.txt
+python3 heuristica.py exemplo.txt
+python3 pilot.py exemplo.txt
+```
+
+### 3. Reproduzir as tabelas do artigo
+
+```bash
+python3 gerador.py --banco instancias/     # gera as 720 instâncias
+python3 experimentos.py 50
+python3 experimentos.py 100
+python3 experimentos.py 500 --sem-pilot
 Scripts em Python puro (só biblioteca padrão, Python 3.8 ou superior) para gerar
 instâncias e resolver o problema da Árvore de Steiner com Rotulação Mínima.
-
-**O problema:** dado um grafo em que cada aresta tem um rótulo (cor) e um
-conjunto de vértices básicos, encontrar uma árvore que conecte todos os
-vértices básicos usando o menor número possível de rótulos diferentes.
-
 Deixe todos os arquivos na mesma pasta: alguns scripts importam funções dos
 outros.
 
@@ -29,7 +49,6 @@ outros.
 | `experimentos.py` | Roda os três métodos em todas as instâncias de um tamanho e imprime as tabelas do artigo |
 
 ---
-
 ## Formato da instância
 
 Arquivo de texto:
@@ -215,20 +234,12 @@ print(len(C), "rótulos;", len(T), "arestas na árvore")
 ```
 
 
-## Formato das instâncias
-
-```json
-{
-  "terminals": [1, 3, 4, 8],
-  "edges": [[1, 2, "a"], [2, 3, "a"], [3, 4, "b"], [8, 7, "b"]]
-}
-```
 
 Cada aresta é `[u, v, rótulo]`. Os vértices são inferidos a partir das arestas.
 
 ## Integrantes
-Victor Bastos Xavier
+Victor Bastos Xavier - victor.xavier.702@ufrn.edu.br
 
-Raul Ramalho Lucena
+Raul Ramalho Lucena - raulramalho2016@gmail.com 
 
-## Referências (Papers)
+## Referências (Papers) - AINDA NÃO IMPLEMENTADO
