@@ -69,6 +69,8 @@ Os scripts ficam em `mlsteiner/src/` e devem permanecer juntos na mesma pasta, p
 Algoritmo-PAA-UFRN/
 ├── README.md
 ├── docs/
+    └── pdf
+    └── gif
 └── mlsteiner/
     └── src/
         ├── gerador.py
