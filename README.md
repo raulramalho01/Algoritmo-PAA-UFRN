@@ -32,8 +32,11 @@ Implementação em Python de uma heurística para o problema da **Árvore de Ste
 
 ```bash
 git clone https://github.com/raulramalho01/Algoritmo-PAA-UFRN.git
-cd Algoritmo-PAA-UFRN
+cd Algoritmo-PAA-UFRN/mlsteiner/src
 ```
+
+> [!IMPORTANT]
+> Todos os comandos abaixo devem ser executados de dentro da pasta `mlsteiner/src`, onde ficam os scripts.
 
 ### 2. Gerar uma instância e resolver
 
@@ -60,7 +63,20 @@ python3 experimentos.py 500 --sem-pilot
 
 ## Estrutura do projeto
 
-Deixe todos os arquivos na mesma pasta: alguns scripts importam funções dos outros.
+Os scripts ficam em `mlsteiner/src/` e devem permanecer juntos na mesma pasta, pois alguns importam funções dos outros.
+
+```text
+Algoritmo-PAA-UFRN/
+├── README.md
+├── docs/
+└── mlsteiner/
+    └── src/
+        ├── gerador.py
+        ├── guloso.py
+        ├── heuristica.py
+        ├── pilot.py
+        └── experimentos.py
+```
 
 | Arquivo | O que faz |
 |---|---|
@@ -227,6 +243,8 @@ Quanto menor o número de rótulos, melhor. A coluna OPT (ótimo) do artigo vem 
 ---
 
 ## Usando como biblioteca
+
+Rode o Python de dentro de `mlsteiner/src` (ou adicione essa pasta ao `PYTHONPATH`):
 
 ```python
 from gerador import ler

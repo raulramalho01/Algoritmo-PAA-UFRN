@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+
+# arquivos gerados pelos scripts
+mlsteiner/src/instancias/
+mlsteiner/src/*.txt
