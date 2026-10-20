@@ -6,113 +6,214 @@ Implementação em Python de uma heurística para o problema da **Árvore de Ste
   <img src="docs/arvore-steiner-rotulacao-minima.gif" width="600" alt="Animação da Árvore de Steiner com Rotulação Mínima">
 </p>
 
-## Estrutura do repositório
-
-```
-.
-├── README.md
-├── pyproject.toml
-├── docs/
-│   └── arvore-steiner-rotulacao-minima.gif
-├── instances/
-│   └── exemplo.json          # instâncias de exemplo para a CLI
-├── src/
-│   └── mlsteiner/
-│       ├── __init__.py
-│       ├── graph.py          # grafo rotulado e leitura de instâncias (JSON)
-│       ├── solver.py         # heurística gulosa (MVCA) e extração da árvore
-│       ├── exact.py          # força bruta para instâncias pequenas
-│       ├── visualize.py      # visualização com matplotlib (opcional)
-│       └── cli.py            # interface de linha de comando
-└── tests/
-    ├── conftest.py           # fixtures compartilhadas
-    ├── test_graph.py
-    ├── test_solver.py
-    ├── test_cli.py
-    └── test_visualize.py
-```
-
-## Tecnologias utilizadas
-
-| Tecnologia | Versão mínima | Uso |
-| --- | --- | --- |
-| [Python](https://www.python.org/) | 3.10 | Linguagem do projeto |
-| [uv](https://docs.astral.sh/uv/) | 0.5 | Gerenciamento do ambiente e das dependências (recomendado) |
-| [matplotlib](https://matplotlib.org/) | 3.8 | Visualização gráfica (opcional) |
-| [Pillow](https://python-pillow.org/) | 10.0 | Exportação de GIFs (opcional) |
-| [pytest](https://docs.pytest.org/) | 8.0 | Suíte de testes |
-| [pytest-cov](https://pytest-cov.readthedocs.io/) | 5.0 | Cobertura de testes |
-
-O núcleo do algoritmo usa apenas a biblioteca padrão do Python. As bibliotecas de visualização só são necessárias para as opções `--plot` e `--gif`.
-
 ## Como rodar o projeto
 
-### 1. Clonar o repositório
+# MLSteiner: Árvore de Steiner com Rotulação Mínima
 
-```bash
-git clone https://github.com/<seu-usuario>/<seu-repositorio>.git
-cd <seu-repositorio>
+Scripts em Python puro (só biblioteca padrão, Python 3.8 ou superior) para gerar
+instâncias e resolver o problema da Árvore de Steiner com Rotulação Mínima.
+
+**O problema:** dado um grafo em que cada aresta tem um rótulo (cor) e um
+conjunto de vértices básicos, encontrar uma árvore que conecte todos os
+vértices básicos usando o menor número possível de rótulos diferentes.
+
+Deixe todos os arquivos na mesma pasta: alguns scripts importam funções dos
+outros.
+
+| Arquivo | O que faz |
+|---|---|
+| `gerador.py` | Gera instâncias aleatórias do problema |
+| `guloso.py` | Algoritmo guloso de Cerulli et al. (2006) |
+| `heuristica.py` | Heurística MVCA-Steiner (proposta no trabalho) |
+| `pilot.py` | Pilot Method de Cerulli et al. (2006) |
+| `experimentos.py` | Roda os três métodos em todas as instâncias de um tamanho e imprime as tabelas do artigo |
+
+---
+
+## Formato da instância
+
+Arquivo de texto:
+
+```
+n m l q              <- nº de vértices, arestas, rótulos e vértices básicos
+b1 b2 ... bq         <- os vértices básicos (numerados de 0 a n-1)
+u v c                <- uma aresta por linha: liga u a v, com rótulo c
+...
 ```
 
-### 2. Sem a interface gráfica
+---
 
-Instala apenas o algoritmo, sem matplotlib. Ideal para servidores, CI ou para usar o pacote como biblioteca.
+## `gerador.py`
 
-Com **uv**:
+Gera instâncias aleatórias. Primeiro cria uma árvore aleatória, para o grafo
+ser conexo, e depois sorteia as demais arestas até completar
+`m = d·n(n−1)/2`. Cada aresta recebe um rótulo aleatório, e os `q` vértices
+básicos são sorteados.
 
-```bash
-uv sync
-uv run mlsteiner instances/exemplo.json
+**CLI**
+
+```
+python3 gerador.py N L D Q [--seed S] [-o ARQUIVO]
+python3 gerador.py --banco PASTA
 ```
 
-Com **pip** e ambiente virtual:
+| Argumento | Significado |
+|---|---|
+| `N` | número de vértices |
+| `L` | número de rótulos |
+| `D` | densidade, entre 0 e 1 |
+| `Q` | número de vértices básicos |
+| `--seed S` | semente aleatória (padrão: 0); a mesma semente gera a mesma instância |
+| `-o ARQUIVO` | arquivo de saída (padrão: `instancia.txt`) |
+| `--banco PASTA` | gera o banco completo do artigo (720 instâncias) na pasta indicada |
 
-```bash
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -e .
-mlsteiner instances/exemplo.json
+**Exemplos**
+
+```
+python3 gerador.py 100 125 0.2 40 --seed 7 -o exemplo.txt
+python3 gerador.py --banco instancias/
 ```
 
-A saída mostra os rótulos escolhidos e as arestas da árvore no terminal.
+O banco usa n ∈ {50, 100, 500}, l ∈ {0,25n; 0,5n; n; 1,25n},
+d ∈ {0,8; 0,5; 0,2} e q ∈ {0,2n; 0,4n}, com 10 instâncias por combinação.
 
-### 3. Com a interface gráfica
+---
 
-Instala também as dependências de visualização.
+## `guloso.py`
 
-Com **uv**:
+Algoritmo guloso original de Cerulli et al. (2006). Começa sem nenhum rótulo e,
+a cada passo, adiciona o rótulo que deixa menos componentes contendo vértices
+básicos, até todos ficarem conectados. Empates são decididos pelo menor número
+do rótulo. No final, remove rótulos que ficaram desnecessários.
 
-```bash
-uv sync --extra viz
-uv run mlsteiner instances/exemplo.json --plot                  # abre uma janela com o passo a passo
-uv run mlsteiner instances/exemplo.json --gif docs/saida.gif    # salva a animação em GIF
+Este arquivo também contém as funções usadas pelos outros scripts: union-find,
+teste de viabilidade, extração e verificação da árvore.
+
+**CLI**
+
+```
+python3 guloso.py ARQUIVO
 ```
 
-Com **pip** e ambiente virtual:
+**Exemplo**
 
-```bash
-pip install -e ".[viz]"
-mlsteiner instances/exemplo.json --plot
-mlsteiner instances/exemplo.json --gif docs/saida.gif
+```
+$ python3 guloso.py exemplo.txt
+Guloso (Cerulli et al., 2006): 10 rótulos [1, 15, 16, 31, 37, 47, 62, 85, 106, 120]  (11.4 ms)
+árvore verificada: 62 arestas, 10 rótulos distintos
 ```
 
-> **Sem monitor (SSH, WSL, CI):** a opção `--plot` precisa de uma tela. Nesses ambientes, use `--gif`, que funciona sem janela.
+---
 
-### 4. Rodar os testes
+## `heuristica.py`
 
-Com **uv**:
+Heurística MVCA-Steiner: o guloso acima com duas melhorias.
 
-```bash
-uv run pytest
-uv run pytest --cov=mlsteiner     # com relatório de cobertura
+1. **Desempate:** entre rótulos empatados, prefere o que "puxa" mais partes sem
+   vértices básicos para dentro das partes com básicos e, depois, o que faz
+   mais ligações.
+2. **Eliminação:** no final, tenta remover cada rótulo, do menos para o mais
+   frequente, sem desconectar os básicos.
+
+**CLI**
+
+```
+python3 heuristica.py ARQUIVO [--sem-eliminacao]
 ```
 
-Com **pip**:
+| Opção | Significado |
+|---|---|
+| `--sem-eliminacao` | desliga a etapa 2 (coluna "s/elim." das tabelas) |
 
-```bash
-pip install -e ".[viz,dev]"
-pytest
+**Exemplo**
+
 ```
+$ python3 heuristica.py exemplo.txt
+MVCA-Steiner: 9 rótulos [1, 31, 37, 47, 70, 85, 87, 106, 116]  (10.9 ms)
+árvore verificada: 56 arestas, 9 rótulos distintos
+```
+
+---
+
+## `pilot.py`
+
+Pilot Method de Cerulli et al. (2006). Monta a solução rótulo a rótulo: em cada
+etapa, testa cada rótulo candidato completando a solução com o guloso e fica
+com o que levou à menor solução. Encontra soluções melhores, mas é bem mais
+lento, pois executa o guloso muitas vezes.
+
+**CLI**
+
+```
+python3 pilot.py ARQUIVO
+```
+
+**Exemplo**
+
+```
+$ python3 pilot.py exemplo.txt
+Pilot Method: 8 rótulos [1, 7, 31, 37, 47, 85, 103, 116]  (7346.8 ms)
+árvore verificada: 56 arestas, 8 rótulos distintos
+```
+
+---
+
+## `experimentos.py`
+
+Roda os métodos em todas as instâncias de um tamanho `n` e imprime a média de
+rótulos por classe, no formato das Tabelas 1 a 3 do artigo. Se as instâncias
+ainda não existirem, ele as gera na pasta `instancias/`.
+
+**CLI**
+
+```
+python3 experimentos.py N [--sem-pilot]
+```
+
+| Argumento | Significado |
+|---|---|
+| `N` | tamanho das instâncias: 50, 100 ou 500 |
+| `--sem-pilot` | não roda o Pilot Method (recomendado para N = 500, que levaria horas) |
+
+**Exemplo**
+
+```
+$ python3 experimentos.py 50
+   q    l    d | MVCA-S  Cer. s/elim Pilot |     ms
+  10   12  0.8 |    1.0   1.0    1.0   1.0 |    1.2
+  ...
+          soma |   40.0  40.5   40.6  38.0 |
+```
+
+**Colunas da saída**
+
+| Coluna | Significado |
+|---|---|
+| `q`, `l`, `d` | parâmetros da classe |
+| `MVCA-S` | média de rótulos da heurística proposta |
+| `Cer.` | média de rótulos do guloso original |
+| `s/elim` | média da heurística sem a eliminação |
+| `Pilot` | média do Pilot Method |
+| `ms` | tempo médio da heurística, em milissegundos |
+
+Quanto menor o número de rótulos, melhor. A coluna OPT (ótimo) do artigo vem
+de um solver exato externo e não é calculada por estes scripts.
+
+---
+
+## Usando como biblioteca
+
+```python
+from gerador import ler
+from heuristica import mvca_steiner
+from guloso import arestas_por_rotulo, extrair_arvore
+
+n, l, arestas, basicos = ler("exemplo.txt")
+C = mvca_steiner(n, l, arestas, basicos)          # conjunto de rótulos
+T = extrair_arvore(n, arestas_por_rotulo(l, arestas), basicos, C)
+print(len(C), "rótulos;", len(T), "arestas na árvore")
+```
+
 
 ## Formato das instâncias
 
@@ -131,6 +232,3 @@ Victor Bastos Xavier
 Raul Ramalho Lucena
 
 ## Referências (Papers)
-[1] Consoli, S., Darby-Dowman, K., Mladenović, N., & Moreno-Pérez, J. A. (2009). Variable neighbourhood search for the minimum labelling Steiner tree problem. Annals of Operations Research, 172(1), 71–96. https://doi.org/10.1007/s10479-008-0507-y
-
-[2] Consoli, S., Moreno-Pérez, J. A., Darby-Dowman, K., & Mladenović, N. (2010). Discrete particle swarm optimization for the minimum labelling steiner tree problem. Natural Computing, 9(1), 29–46. https://doi.org/10.1007/s11047-009-9137-9
