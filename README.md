@@ -141,7 +141,7 @@ Guloso (Cerulli et al., 2006): 10 rótulos [1, 15, 16, 31, 37, 47, 62, 85, 106, 
 
 ## `heuristica.py`
 
-Heurística MVCA-Steiner: o guloso acima com duas melhorias.
+Heurística MVCA-Steiner: 
 
 1. **Desempate:** entre rótulos empatados, prefere o que "puxa" mais partes sem vértices básicos para dentro das partes com básicos e, depois, o que faz mais ligações.
 2. **Eliminação:** no final, tenta remover cada rótulo, do menos para o mais frequente, sem desconectar os básicos.
