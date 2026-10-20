@@ -1,22 +1,38 @@
-## MLSteiner: Árvore de Steiner com Rotulação Mínima
+# MLSteiner: Árvore de Steiner com Rotulação Mínima
 
 Implementação em Python de uma heurística para o problema da **Árvore de Steiner com Rotulação Mínima** (*Minimum Labeling Steiner Tree*, MLSteiner).
 
-**O problema:** dado um grafo em que cada aresta tem um rótulo (cor) e um
-conjunto de vértices básicos, encontrar uma árvore que conecte todos os
-vértices básicos usando o menor número possível de rótulos diferentes.
+> **O problema:** dado um grafo em que cada aresta tem um rótulo (cor) e um conjunto de vértices básicos, encontrar uma árvore que conecte todos os vértices básicos usando o menor número possível de rótulos diferentes.
 
 <p align="center">
   <img src="docs/arvore-steiner-rotulacao-minima.gif" width="600" alt="Animação da Árvore de Steiner com Rotulação Mínima">
 </p>
 
+## Sumário
+
+- [Como rodar o projeto](#como-rodar-o-projeto)
+- [Estrutura do projeto](#estrutura-do-projeto)
+- [Formato da instância](#formato-da-instância)
+- [`gerador.py`](#geradorpy)
+- [`guloso.py`](#gulosopy)
+- [`heuristica.py`](#heuristicapy)
+- [`pilot.py`](#pilotpy)
+- [`experimentos.py`](#experimentospy)
+- [Usando como biblioteca](#usando-como-biblioteca)
+- [Integrantes](#integrantes)
+- [Referências](#referências)
+
+---
+
 ## Como rodar o projeto
+
+**Pré-requisitos:** Python 3.8 ou superior e Git. Os scripts usam só a biblioteca padrão do Python, então não há nada para instalar.
 
 ### 1. Clonar o repositório
 
 ```bash
-git clone <URL-DO-REPOSITORIO>
-cd <NOME-DA-PASTA>
+git clone https://github.com/raulramalho01/Algoritmo-PAA-UFRN.git
+cd Algoritmo-PAA-UFRN
 ```
 
 ### 2. Gerar uma instância e resolver
@@ -35,10 +51,16 @@ python3 gerador.py --banco instancias/     # gera as 720 instâncias
 python3 experimentos.py 50
 python3 experimentos.py 100
 python3 experimentos.py 500 --sem-pilot
-Scripts em Python puro (só biblioteca padrão, Python 3.8 ou superior) para gerar
-instâncias e resolver o problema da Árvore de Steiner com Rotulação Mínima.
-Deixe todos os arquivos na mesma pasta: alguns scripts importam funções dos
-outros.
+```
+
+> [!NOTE]
+> No Windows, use `python` no lugar de `python3`.
+
+---
+
+## Estrutura do projeto
+
+Deixe todos os arquivos na mesma pasta: alguns scripts importam funções dos outros.
 
 | Arquivo | O que faz |
 |---|---|
@@ -49,11 +71,12 @@ outros.
 | `experimentos.py` | Roda os três métodos em todas as instâncias de um tamanho e imprime as tabelas do artigo |
 
 ---
+
 ## Formato da instância
 
 Arquivo de texto:
 
-```
+```text
 n m l q              <- nº de vértices, arestas, rótulos e vértices básicos
 b1 b2 ... bq         <- os vértices básicos (numerados de 0 a n-1)
 u v c                <- uma aresta por linha: liga u a v, com rótulo c
@@ -64,14 +87,11 @@ u v c                <- uma aresta por linha: liga u a v, com rótulo c
 
 ## `gerador.py`
 
-Gera instâncias aleatórias. Primeiro cria uma árvore aleatória, para o grafo
-ser conexo, e depois sorteia as demais arestas até completar
-`m = d·n(n−1)/2`. Cada aresta recebe um rótulo aleatório, e os `q` vértices
-básicos são sorteados.
+Gera instâncias aleatórias. Primeiro cria uma árvore aleatória, para o grafo ser conexo, e depois sorteia as demais arestas até completar `m = d·n(n−1)/2`. Cada aresta recebe um rótulo aleatório, e os `q` vértices básicos são sorteados.
 
 **CLI**
 
-```
+```bash
 python3 gerador.py N L D Q [--seed S] [-o ARQUIVO]
 python3 gerador.py --banco PASTA
 ```
@@ -88,35 +108,30 @@ python3 gerador.py --banco PASTA
 
 **Exemplos**
 
-```
+```bash
 python3 gerador.py 100 125 0.2 40 --seed 7 -o exemplo.txt
 python3 gerador.py --banco instancias/
 ```
 
-O banco usa n ∈ {50, 100, 500}, l ∈ {0,25n; 0,5n; n; 1,25n},
-d ∈ {0,8; 0,5; 0,2} e q ∈ {0,2n; 0,4n}, com 10 instâncias por combinação.
+O banco usa n ∈ {50, 100, 500}, l ∈ {0,25n; 0,5n; n; 1,25n}, d ∈ {0,8; 0,5; 0,2} e q ∈ {0,2n; 0,4n}, com 10 instâncias por combinação.
 
 ---
 
 ## `guloso.py`
 
-Algoritmo guloso original de Cerulli et al. (2006). Começa sem nenhum rótulo e,
-a cada passo, adiciona o rótulo que deixa menos componentes contendo vértices
-básicos, até todos ficarem conectados. Empates são decididos pelo menor número
-do rótulo. No final, remove rótulos que ficaram desnecessários.
+Algoritmo guloso original de Cerulli et al. (2006). Começa sem nenhum rótulo e, a cada passo, adiciona o rótulo que deixa menos componentes contendo vértices básicos, até todos ficarem conectados. Empates são decididos pelo menor número do rótulo. No final, remove rótulos que ficaram desnecessários.
 
-Este arquivo também contém as funções usadas pelos outros scripts: union-find,
-teste de viabilidade, extração e verificação da árvore.
+Este arquivo também contém as funções usadas pelos outros scripts: union-find, teste de viabilidade, extração e verificação da árvore.
 
 **CLI**
 
-```
+```bash
 python3 guloso.py ARQUIVO
 ```
 
 **Exemplo**
 
-```
+```console
 $ python3 guloso.py exemplo.txt
 Guloso (Cerulli et al., 2006): 10 rótulos [1, 15, 16, 31, 37, 47, 62, 85, 106, 120]  (11.4 ms)
 árvore verificada: 62 arestas, 10 rótulos distintos
@@ -128,15 +143,12 @@ Guloso (Cerulli et al., 2006): 10 rótulos [1, 15, 16, 31, 37, 47, 62, 85, 106, 
 
 Heurística MVCA-Steiner: o guloso acima com duas melhorias.
 
-1. **Desempate:** entre rótulos empatados, prefere o que "puxa" mais partes sem
-   vértices básicos para dentro das partes com básicos e, depois, o que faz
-   mais ligações.
-2. **Eliminação:** no final, tenta remover cada rótulo, do menos para o mais
-   frequente, sem desconectar os básicos.
+1. **Desempate:** entre rótulos empatados, prefere o que "puxa" mais partes sem vértices básicos para dentro das partes com básicos e, depois, o que faz mais ligações.
+2. **Eliminação:** no final, tenta remover cada rótulo, do menos para o mais frequente, sem desconectar os básicos.
 
 **CLI**
 
-```
+```bash
 python3 heuristica.py ARQUIVO [--sem-eliminacao]
 ```
 
@@ -146,7 +158,7 @@ python3 heuristica.py ARQUIVO [--sem-eliminacao]
 
 **Exemplo**
 
-```
+```console
 $ python3 heuristica.py exemplo.txt
 MVCA-Steiner: 9 rótulos [1, 31, 37, 47, 70, 85, 87, 106, 116]  (10.9 ms)
 árvore verificada: 56 arestas, 9 rótulos distintos
@@ -156,20 +168,17 @@ MVCA-Steiner: 9 rótulos [1, 31, 37, 47, 70, 85, 87, 106, 116]  (10.9 ms)
 
 ## `pilot.py`
 
-Pilot Method de Cerulli et al. (2006). Monta a solução rótulo a rótulo: em cada
-etapa, testa cada rótulo candidato completando a solução com o guloso e fica
-com o que levou à menor solução. Encontra soluções melhores, mas é bem mais
-lento, pois executa o guloso muitas vezes.
+Pilot Method de Cerulli et al. (2006). Monta a solução rótulo a rótulo: em cada etapa, testa cada rótulo candidato completando a solução com o guloso e fica com o que levou à menor solução. Encontra soluções melhores, mas é bem mais lento, pois executa o guloso muitas vezes.
 
 **CLI**
 
-```
+```bash
 python3 pilot.py ARQUIVO
 ```
 
 **Exemplo**
 
-```
+```console
 $ python3 pilot.py exemplo.txt
 Pilot Method: 8 rótulos [1, 7, 31, 37, 47, 85, 103, 116]  (7346.8 ms)
 árvore verificada: 56 arestas, 8 rótulos distintos
@@ -179,13 +188,11 @@ Pilot Method: 8 rótulos [1, 7, 31, 37, 47, 85, 103, 116]  (7346.8 ms)
 
 ## `experimentos.py`
 
-Roda os métodos em todas as instâncias de um tamanho `n` e imprime a média de
-rótulos por classe, no formato das Tabelas 1 a 3 do artigo. Se as instâncias
-ainda não existirem, ele as gera na pasta `instancias/`.
+Roda os métodos em todas as instâncias de um tamanho `n` e imprime a média de rótulos por classe, no formato das Tabelas 1 a 3 do artigo. Se as instâncias ainda não existirem, ele as gera na pasta `instancias/`.
 
 **CLI**
 
-```
+```bash
 python3 experimentos.py N [--sem-pilot]
 ```
 
@@ -196,7 +203,7 @@ python3 experimentos.py N [--sem-pilot]
 
 **Exemplo**
 
-```
+```console
 $ python3 experimentos.py 50
    q    l    d | MVCA-S  Cer. s/elim Pilot |     ms
   10   12  0.8 |    1.0   1.0    1.0   1.0 |    1.2
@@ -215,8 +222,7 @@ $ python3 experimentos.py 50
 | `Pilot` | média do Pilot Method |
 | `ms` | tempo médio da heurística, em milissegundos |
 
-Quanto menor o número de rótulos, melhor. A coluna OPT (ótimo) do artigo vem
-de um solver exato externo e não é calculada por estes scripts.
+Quanto menor o número de rótulos, melhor. A coluna OPT (ótimo) do artigo vem de um solver exato externo e não é calculada por estes scripts.
 
 ---
 
@@ -233,13 +239,21 @@ T = extrair_arvore(n, arestas_por_rotulo(l, arestas), basicos, C)
 print(len(C), "rótulos;", len(T), "arestas na árvore")
 ```
 
+`ler` devolve as arestas como tuplas `(u, v, rótulo)` e a árvore `T` vem no mesmo formato.
 
-
-Cada aresta é `[u, v, rótulo]`. Os vértices são inferidos a partir das arestas.
+---
 
 ## Integrantes
-Victor Bastos Xavier - victor.xavier.702@ufrn.edu.br
 
-Raul Ramalho Lucena - raulramalho2016@gmail.com 
+- **Victor Bastos Xavier**: victor.xavier.702@ufrn.edu.br
+- **Raul Ramalho Lucena**: raulramalho2016@gmail.com
 
-## Referências (Papers) - AINDA NÃO IMPLEMENTADO
+---
+
+## Referências
+
+- CERULLI, R. et al. Extensions of the minimum labelling spanning tree problem. **Journal of Telecommunications and Information Technology**, n. 4, p. 39-45, 2006. Disponível em: <https://doi.org/10.26636/jtit.2006.4.396>.
+- CHANG, R.-S.; LEU, S.-J. The minimum labeling spanning trees. **Information Processing Letters**, v. 63, n. 5, p. 277-282, 1997.
+- CONSOLI, S. et al. Variable neighbourhood search for the minimum labelling Steiner tree problem. **Annals of Operations Research**, v. 172, n. 1, p. 71-96, 2009. Versão preliminar: <http://bura.brunel.ac.uk/handle/2438/1337>.
+- KRUMKE, S. O.; WIRTH, H.-C. On the minimum label spanning tree problem. **Information Processing Letters**, v. 66, n. 2, p. 81-85, 1998.
+- WAN, Y.; CHEN, G.; XU, Y. A note on the minimum label spanning tree. **Information Processing Letters**, v. 84, n. 2, p. 99-101, 2002.
