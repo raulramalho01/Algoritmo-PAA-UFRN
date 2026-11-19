@@ -4,3 +4,5 @@ __pycache__/
 # arquivos gerados pelos scripts
 mlsteiner/src/instancias/
 mlsteiner/src/*.txt
+mlsteiner/src/instancias_benchmark/
+mlsteiner/src/resultados/
